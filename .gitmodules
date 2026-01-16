@@ -1,0 +1,3 @@
+[submodule "cflib"]
+	path = cflib
+	url = git@github.com:fishbach/cflib.git
