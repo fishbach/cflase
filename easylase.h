@@ -8,6 +8,7 @@ public:
     static constexpr quint16 MinSpeed  = 500;
     static constexpr quint16 MaxSpeed  = 65000;
     static constexpr quint16 SpeedStep = 500;
+    static constexpr quint16 MaxPoints = 16384;
 
     struct Point
     {

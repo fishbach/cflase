@@ -17,12 +17,13 @@ static_assert(std::bit_cast<std::array<quint8, 8>>(EasyLase::Point{.x = 0x1234, 
 static_assert(std::bit_cast<std::array<quint8, 8>>(EasyLase::Point{.x = 0x1234, .y = 0x5678, .r = 0x9a, .g = 0xbc})[5] == 0xbc);
 
 const QString    DeviceName = "/dev/easylase0";
-const QByteArray LaserOn    = QByteArray::fromHex("a6a6a6a6a6a600010300");
-const QByteArray LaserOff   = QByteArray::fromHex("a6a6a6a6a6a600010000");
-const QByteArray LaserIdle  = QByteArray::fromHex("a5a5a5a5a5a5000102000000");
-const QByteArray LaserData  = QByteArray::fromHex("a5a5a5a5a5a50001");
+const QByteArray LaserStatus = QByteArray::fromHex("a9a9a9a9a9a9");
+const QByteArray LaserOn     = QByteArray::fromHex("a6a6a6a6a6a600010300");
+const QByteArray LaserOff    = QByteArray::fromHex("a6a6a6a6a6a600010000");
+const QByteArray LaserIdle   = QByteArray::fromHex("a5a5a5a5a5a5000102000000");
+const QByteArray LaserData   = QByteArray::fromHex("a5a5a5a5a5a50001");
 
-QByteArray toByteArray(quint16 number) { return QByteArray::fromRawData(reinterpret_cast<const char *>(&number), sizeof(number)); }
+QByteArray toByteArray(quint16 number) { return QByteArray(reinterpret_cast<const char *>(&number), sizeof(number)); }
 
 }
 
@@ -50,39 +51,47 @@ QString EasyLase::error() const
 
 bool EasyLase::isReady()
 {
-    return false;
+    if (device_.write(LaserStatus) != LaserStatus.size()) {
+        logWarn("cannot write status command: ", device_.errorString());
+        return false;
+    }
+    char c;
+    if (!device_.getChar(&c)) {
+        logWarn("cannot read status: ", device_.errorString());
+        return false;
+    }
+    return c == '\x33'; // 0xcc -> busy
 }
 
 bool EasyLase::on()
 {
     logFunctionTrace
-    qint64 c = device_.write(LaserOn);
-    return c == LaserOn.size();
+    return device_.write(LaserOn) == LaserOn.size();
 }
 
 bool EasyLase::off()
 {
     logFunctionTrace
-    qint64 c = device_.write(LaserOff);
-    return c == LaserOff.size();
+    return device_.write(LaserOff) == LaserOff.size();
 }
 
 bool EasyLase::idle()
 {
     logFunctionTrace
-    qint64 c = device_.write(LaserIdle);
-    return c == LaserIdle.size();
+    return device_.write(LaserIdle) == LaserIdle.size();
 }
 
 bool EasyLase::show(quint16 pps, const Points & points)
 {
     logFunctionTrace
     if (points.empty()) return idle();
-    if (points.size() > 8.191) return false;
+    if (points.size() > MaxPoints) return false;
     QByteArray data = LaserData;
     data += toByteArray(pps);
-    data += toByteArray(points.size());
-    data.append(reinterpret_cast<const char *>(points.data()), points.size() * sizeof(Point));
+    const quint16 size = points.size() * sizeof(Point);
+    data += toByteArray(size);
+    data.append(reinterpret_cast<const char *>(points.data()), size);
+    logTrace("sending (hex): %1", data.toHex());
     qint64 c = device_.write(data);
     return c == data.size();
 }
