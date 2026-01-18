@@ -32,66 +32,88 @@ EasyLase::EasyLase() :
 {
 }
 
-bool EasyLase::connect()
+EasyLase::~EasyLase()
 {
     logFunctionTrace
-    bool ok = device_.open(QIODevice::ReadWrite | QIODevice::Unbuffered | QIODevice::ExistingOnly);
-    if (!ok) {
-        logWarn("cannot connect to EasyLase device %1 : %2", DeviceName, device_.errorString());
-    } else {
-        logInfo("connected to EasyLase at %1", DeviceName);
-    }
-    return ok;
+    if (device_.isOpen()) disconnect();
 }
 
-QString EasyLase::error() const
+bool EasyLase::check(bool condition, const QString & msg)
 {
-    return device_.errorString();
+    if (condition || !error_.isNull()) return error_.isNull();
+    if (!msg.isEmpty()) {
+        error_ = msg;
+        if (!device_.errorString().isEmpty()) error_ += QString(" - %1").arg(device_.errorString());
+    } else {
+        error_ = device_.errorString();
+        if (error_.isEmpty()) error_ = "unknown";
+    }
+    logWarn("error: %1", error_);
+    disconnect();
+    if (errorCallback_) errorCallback_();
+    return false;
+}
+
+void EasyLase::connect()
+{
+    logFunctionTrace
+    if (device_.isOpen()) disconnect();
+    error_ = QString();
+    bool ok = device_.open(QIODevice::ReadWrite | QIODevice::Unbuffered | QIODevice::ExistingOnly);
+    if (!ok) {
+        check(false, QString("cannot connect to EasyLase device %1").arg(DeviceName));
+    } else {
+        logInfo("connected to EasyLase device %1", DeviceName);
+    }
+}
+
+void EasyLase::disconnect()
+{
+    device_.close();
+    logInfo("disconnected from EasyLase device %1", DeviceName);
+}
+
+void EasyLase::on()
+{
+    logFunctionTrace
+    check(device_.write(LaserOn) == LaserOn.size());
+}
+
+void EasyLase::off()
+{
+    logFunctionTrace
+    check(device_.write(LaserOff) == LaserOff.size());
+}
+
+void EasyLase::reset()
+{
+    logFunctionTrace
+    check(device_.write(LaserReset) == LaserReset.size());
 }
 
 bool EasyLase::isReady()
 {
-    if (device_.write(LaserStatus) != LaserStatus.size()) {
-        logWarn("cannot write status command: ", device_.errorString());
-        return false;
-    }
+    if (!check(device_.write(LaserStatus) == LaserStatus.size())) return false;
     char c;
-    if (!device_.getChar(&c)) {
-        logWarn("cannot read status: ", device_.errorString());
-        return false;
+    if (!check(device_.getChar(&c))) return false;
+    if (c == '\x33') return true;
+    check(c == '\xcc', QString("funny status code: %1").arg((quint8)c));
+    return false;
+}
+
+void EasyLase::show(quint16 pps, const Points & points)
+{
+    logFunctionTrace
+    if (points.empty()) {
+        reset();
+        return;
     }
-    return c == '\x33'; // 0xcc -> busy
-}
-
-bool EasyLase::on()
-{
-    logFunctionTrace
-    return device_.write(LaserOn) == LaserOn.size();
-}
-
-bool EasyLase::off()
-{
-    logFunctionTrace
-    return device_.write(LaserOff) == LaserOff.size();
-}
-
-bool EasyLase::reset()
-{
-    logFunctionTrace
-    return device_.write(LaserReset) == LaserReset.size();
-}
-
-bool EasyLase::show(quint16 pps, const Points & points)
-{
-    logFunctionTrace
-    if (points.empty()) return reset();
-    if (points.size() > MaxPoints) return false;
+    if (!check(points.size() <= MaxPoints, QString("too many points: %1").arg(points.size()))) return;
     QByteArray data = LaserData;
     data += toByteArray(pps);
     const quint16 size = points.size() * sizeof(Point);
     data += toByteArray(size);
     data.append(reinterpret_cast<const char *>(points.data()), size);
     logTrace("sending (hex): %1", data.toHex());
-    qint64 c = device_.write(data);
-    return c == data.size();
+    check(device_.write(data) == data.size());
 }

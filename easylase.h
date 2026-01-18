@@ -21,27 +21,43 @@ public:
     } __attribute__((packed));
 
     using Points = QVector<Point>;
+    using VoidFunc = std::function<void ()>;
 
 public:
     EasyLase();
+    ~EasyLase();
 
-    bool connect();
-    QString error() const;
+    // If any error occurs, device will be disconnected automatically.
+    // connect() needs to be called again after an error.
+    bool hasError() const { return !error_.isNull(); }
+    QString errorString() const { return error_; }
+
+    // Callback is only called, when a call of one of the public members raises an error.
+    // This class has no threading.
+    void setErrorCallback(VoidFunc callback) { errorCallback_ = callback; }
+
+    void connect();
+    void disconnect();
 
     // no need to check isReady here
-    bool on();
-    bool off();
+    void on();
+    void off();
 
     // For range of pps and points see constants above.
     // We have double buffering and every call to show(...) sends a new frame.
     // After two frames isRead() will go false until the first frame is completed.
     // reset() can be called at any time and clears both buffers and stops output.
     // If you call show() when isReady() returns false, funny behaviour can be experienced.
+    void reset();
     bool isReady();
-    bool reset();
-    bool show(quint16 pps, const Points & points);
-    bool show(const Point & point) { return show(MaxSpeed, Points(1, point)); }
+    void show(quint16 pps, const Points & points);
+    void show(const Point & point) { return show(MinSpeed, Points(1, point)); }
+
+private:
+    bool check(bool condition, const QString & msg = QString());
 
 private:
     QFile device_;
+    QString error_;
+    VoidFunc errorCallback_;
 };

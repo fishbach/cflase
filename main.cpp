@@ -60,37 +60,35 @@ int main(int argc, char *argv[])
     }
 
     EasyLase easyLase;
-    if (!easyLase.connect()) {
-        err << "cannot connect to EasyLase: " << easyLase.error() << Qt::endl;
-        return 2;
-    }
+    easyLase.setErrorCallback([&easyLase]() {
+        err << "error: " << easyLase.errorString() << Qt::endl;
+    });
+    easyLase.connect();
+    if (easyLase.hasError()) return 2;
 
     // commands
     const QByteArray cmd = cmdArg.value();
     if (cmd == "on") {
-        out << "turning on ...";
-        if (easyLase.on()) out << " done" << Qt::endl;
-        else               out << " error: " << easyLase.error() << Qt::endl;
+        out << "turning on ..." << Qt::endl;
+        easyLase.reset();
+        easyLase.on();
         return 0;
     }
     if (cmd == "off") {
-        out << "turning off ...";
-        if (easyLase.off()) out << " done" << Qt::endl;
-        else                out << " error: " << easyLase.error() << Qt::endl;
+        out << "turning off ..." << Qt::endl;
+        easyLase.reset();
+        easyLase.off();
         return 0;
     }
     if (cmd == "idle") {
-        out << "setting idle ...";
-        if (easyLase.reset()) out << " done" << Qt::endl;
-        else                  out << " error: " << easyLase.error() << Qt::endl;
+        out << "setting idle ..." << Qt::endl;
+        easyLase.reset();
         return 0;
     }
     if (cmd == "beam") {
-        out << "showing beam ...";
-        EasyLase::Point p;
-        p.g = 35;
-        if (easyLase.show(p)) out << " done" << Qt::endl;
-        else                  out << " error: " << easyLase.error() << Qt::endl;
+        out << "showing beam ..." << Qt::endl;
+        easyLase.reset();
+        easyLase.show(EasyLase::Point{.g = 35});
         return 0;
     }
     if (cmd == "test") {
