@@ -28,12 +28,19 @@ public:
     bool connect();
     QString error() const;
 
-    bool isReady();
+    // no need to check isReady here
     bool on();
     bool off();
+
+    // For range of pps and points see constants above.
+    // We have double buffering and every call to show(...) sends a new frame.
+    // After two frames isRead() will go false until the first frame is completed.
+    // idle() can be called at any time and clears both buffers.
+    // If you call show() when isReady() returns false, funny behaviour can be experienced.
+    bool isReady();
     bool idle();
-    bool show(const Point & point) { return show(MaxSpeed, Points(1, point)); }
     bool show(quint16 pps, const Points & points);
+    bool show(const Point & point) { return show(MaxSpeed, Points(1, point)); }
 
 private:
     QFile device_;

@@ -110,6 +110,12 @@ int main(int argc, char *argv[])
             easyLase.show(500, points);
             out << "t3: " << currentMSecs() - ts << Qt::endl;
             out << "s4: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
+            if (i == 4) {
+                out << "fast points" << Qt::endl;
+                easyLase.show(1000, EasyLase::Points(1));
+                out << "x: " << currentMSecs() - ts << Qt::endl;
+                out << "x: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
+            }
             out << "t4: " << currentMSecs() - ts << Qt::endl;
             while (!easyLase.isReady());
         }
