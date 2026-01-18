@@ -78,8 +78,10 @@ int main(int argc, char *argv[])
     }
     if (cmd == "beam") {
         out << "showing beam ..." << Qt::endl;
-        if (easylase.beam()) out << " done" << Qt::endl;
-        else                 out << " error: " << easylase.error() << Qt::endl;
+        Easylase::Point p;
+        p.g = 35;
+        if (easylase.show(p)) out << " done" << Qt::endl;
+        else                  out << " error: " << easylase.error() << Qt::endl;
         return 0;
     }
     if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
