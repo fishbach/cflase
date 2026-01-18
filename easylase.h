@@ -2,7 +2,7 @@
 
 #include <QtCore>
 
-class Easylase
+class EasyLase
 {
 public:
     static constexpr quint16 MinSpeed  = 500;
@@ -22,11 +22,12 @@ public:
     using Points = QVector<Point>;
 
 public:
-    Easylase();
+    EasyLase();
 
     bool connect();
     QString error() const;
 
+    bool isReady();
     bool on();
     bool off();
     bool idle();

@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
         Log::setLogLevel(logOpt.value().toUShort());
     }
 
-    Easylase easylase;
+    EasyLase easylase;
     if (!easylase.connect()) {
-        err << "cannot connect to Easylase: " << easylase.error() << Qt::endl;
+        err << "cannot connect to EasyLase: " << easylase.error() << Qt::endl;
         return 2;
     }
 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     }
     if (cmd == "beam") {
         out << "showing beam ..." << Qt::endl;
-        Easylase::Point p;
+        EasyLase::Point p;
         p.g = 35;
         if (easylase.show(p)) out << " done" << Qt::endl;
         else                  out << " error: " << easylase.error() << Qt::endl;
