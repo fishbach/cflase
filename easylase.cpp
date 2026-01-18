@@ -20,7 +20,7 @@ const QString    DeviceName = "/dev/easylase0";
 const QByteArray LaserStatus = QByteArray::fromHex("a9a9a9a9a9a9");
 const QByteArray LaserOn     = QByteArray::fromHex("a6a6a6a6a6a600010300");
 const QByteArray LaserOff    = QByteArray::fromHex("a6a6a6a6a6a600010000");
-const QByteArray LaserIdle   = QByteArray::fromHex("a5a5a5a5a5a5000102000000");
+const QByteArray LaserReset  = QByteArray::fromHex("a5a5a5a5a5a5000102000000");
 const QByteArray LaserData   = QByteArray::fromHex("a5a5a5a5a5a50001");
 
 QByteArray toByteArray(quint16 number) { return QByteArray(reinterpret_cast<const char *>(&number), sizeof(number)); }
@@ -75,16 +75,16 @@ bool EasyLase::off()
     return device_.write(LaserOff) == LaserOff.size();
 }
 
-bool EasyLase::idle()
+bool EasyLase::reset()
 {
     logFunctionTrace
-    return device_.write(LaserIdle) == LaserIdle.size();
+    return device_.write(LaserReset) == LaserReset.size();
 }
 
 bool EasyLase::show(quint16 pps, const Points & points)
 {
     logFunctionTrace
-    if (points.empty()) return idle();
+    if (points.empty()) return reset();
     if (points.size() > MaxPoints) return false;
     QByteArray data = LaserData;
     data += toByteArray(pps);

@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
     }
     if (cmd == "idle") {
         out << "setting idle ...";
-        if (easyLase.idle()) out << " done" << Qt::endl;
-        else                 out << " error: " << easyLase.error() << Qt::endl;
+        if (easyLase.reset()) out << " done" << Qt::endl;
+        else                  out << " error: " << easyLase.error() << Qt::endl;
         return 0;
     }
     if (cmd == "beam") {
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
         points = EasyLase::Points(1000);
         quint64 ts = currentMSecs();
         out << "s1: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-        easyLase.idle();
+        easyLase.reset();
         out << "s2: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
         while (!easyLase.isReady());
         for (int i = 0 ; i < 10 ; ++i) {
