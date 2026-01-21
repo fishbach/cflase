@@ -40,21 +40,25 @@ public:
     void disconnect();
 
     // no need to check isReady here
-    void on();
-    void off();
+    // Attention:
+    // Bits to Pin assignment is different to the description in the EasyLase USB manual.
+    // bit 7 (MSB) -> Pin 3
+    // ...
+    // bit 0 (LSB) -> Pin 10
+    void setTTL(quint8 hiLow);
 
     // For range of pps and points see constants above.
     // We have double buffering and every call to show(...) sends a new frame.
     // After two frames isRead() will go false until the first frame is completed.
-    // reset() can be called at any time and clears both buffers and stops output.
+    // idle() can be called at any time and clears both buffers and stops output.
     // If you call show() when isReady() returns false, funny behaviour can be experienced.
-    void reset();
+    void idle();
     bool isReady();
     void show(quint16 pps, const Points & points);
     void show(const Point & point) { return show(MinSpeed, Points(1, point)); }
 
 private:
-    bool check(bool condition, const QString & msg = QString());
+    bool check(bool condition, const QString & msg);
 
 private:
     QFile device_;

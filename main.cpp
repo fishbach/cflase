@@ -1,4 +1,4 @@
-#include <easylase.h>
+#include <laser/easylase.h>
 
 #include <cflib/dao/version.h>
 #include <cflib/util/cmdline.h>
@@ -70,24 +70,24 @@ int main(int argc, char *argv[])
     const QByteArray cmd = cmdArg.value();
     if (cmd == "on") {
         out << "turning on ..." << Qt::endl;
-        easyLase.reset();
-        easyLase.on();
+        easyLase.idle();
+//        easyLase.on();
         return 0;
     }
     if (cmd == "off") {
         out << "turning off ..." << Qt::endl;
-        easyLase.reset();
-        easyLase.off();
+        easyLase.idle();
+//        easyLase.off();
         return 0;
     }
     if (cmd == "idle") {
         out << "setting idle ..." << Qt::endl;
-        easyLase.reset();
+        easyLase.idle();
         return 0;
     }
     if (cmd == "beam") {
         out << "showing beam ..." << Qt::endl;
-        easyLase.reset();
+        easyLase.idle();
         easyLase.show(EasyLase::Point{.g = 35});
         return 0;
     }
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         points = EasyLase::Points(1000);
         quint64 ts = currentMSecs();
         out << "s1: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-        easyLase.reset();
+        easyLase.idle();
         out << "s2: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
         while (!easyLase.isReady());
         for (int i = 0 ; i < 10 ; ++i) {
