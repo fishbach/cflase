@@ -1,11 +1,9 @@
-#include <laser/easylase.h>
+#include <laser/laser.h>
 
 #include <cflib/dao/version.h>
 #include <cflib/util/cmdline.h>
 #include <cflib/util/log.h>
 #include <cflib/util/unixsignal.h>
-
-#include <time.h>
 
 using namespace cflib::dao;
 using namespace cflib::util;
@@ -32,13 +30,6 @@ int showUsage(const QByteArray & executable)
     return 1;
 }
 
-inline quint64 currentMSecs()
-{
-    struct ::timespec ts;
-    ::clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (quint64)ts.tv_sec * Q_UINT64_C(1000) + (quint64)ts.tv_nsec / Q_UINT64_C(1000000);
-}
-
 }
 
 int main(int argc, char *argv[])
@@ -59,69 +50,33 @@ int main(int argc, char *argv[])
         Log::setLogLevel(logOpt.value().toUShort());
     }
 
-    EasyLase easyLase;
-    easyLase.setErrorCallback([&easyLase]() {
-        err << "error: " << easyLase.errorString() << Qt::endl;
+    Laser laser;
+    laser.setErrorCallback([&laser]() {
+        err << "error: " << laser.errorString() << Qt::endl;
     });
-    easyLase.connect();
-    if (easyLase.hasError()) return 2;
+    if (laser.hasError()) return 2;
 
     // commands
     const QByteArray cmd = cmdArg.value();
     if (cmd == "on") {
         out << "turning on ..." << Qt::endl;
-        easyLase.idle();
-//        easyLase.on();
+        laser.on();
+        laser.waitForFinish();
         return 0;
-    }
-    if (cmd == "off") {
+    } else if (cmd == "off") {
         out << "turning off ..." << Qt::endl;
-        easyLase.idle();
-//        easyLase.off();
+        laser.off();
+        laser.waitForFinish();
         return 0;
-    }
-    if (cmd == "idle") {
-        out << "setting idle ..." << Qt::endl;
-        easyLase.idle();
-        return 0;
-    }
-    if (cmd == "beam") {
+    } else if (cmd == "beam") {
         out << "showing beam ..." << Qt::endl;
-        easyLase.idle();
-        easyLase.show(EasyLase::Point{.g = 35});
-        return 0;
-    }
-    if (cmd == "test") {
+        laser.show(EasyLase::Point{.g = 35});
+    } else if (cmd == "test") {
         out << "showing test ..." << Qt::endl;
-        EasyLase::Points points;
-        EasyLase::Point p;
-        p.g = 35;
-        points = EasyLase::Points(1000);
-        quint64 ts = currentMSecs();
-        out << "s1: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-        easyLase.idle();
-        out << "s2: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-        while (!easyLase.isReady());
-        for (int i = 0 ; i < 10 ; ++i) {
-            out << Qt::endl;
-            out << "t2: " << currentMSecs() - ts << Qt::endl;
-            easyLase.show(500, points);
-            out << "t3: " << currentMSecs() - ts << Qt::endl;
-            out << "s4: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-            if (i == 4) {
-                out << "fast points" << Qt::endl;
-                easyLase.show(1000, EasyLase::Points(1));
-                out << "x: " << currentMSecs() - ts << Qt::endl;
-                out << "x: " << (easyLase.isReady() ? "ready" : "not ready") << Qt::endl;
-            }
-            out << "t4: " << currentMSecs() - ts << Qt::endl;
-            while (!easyLase.isReady());
-        }
-        out << Qt::endl;
-        out << "t5: " << currentMSecs() - ts << Qt::endl;
+        laser.test();
+        laser.waitForFinish();
         return 0;
-    }
-    if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
+    } else if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
 
     int retval = a.exec();
     logInfo("terminating softly with retval: %1", retval);

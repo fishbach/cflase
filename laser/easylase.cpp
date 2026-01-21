@@ -39,7 +39,8 @@ EasyLase::~EasyLase()
 
 bool EasyLase::check(bool condition, const QString & msg)
 {
-    if (condition || !error_.isNull()) return error_.isNull();
+    if (condition) return true;
+    if (!error_.isNull()) return false;
     if (!msg.isEmpty()) {
         error_ = msg;
         if (!device_.errorString().isEmpty()) error_ += QString(" - %1").arg(device_.errorString());

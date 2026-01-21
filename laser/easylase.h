@@ -6,9 +6,8 @@ class EasyLase
 {
 public:
     static constexpr quint16 MinSpeed  = 500;
-    static constexpr quint16 MaxSpeed  = 65000;
-    static constexpr quint16 SpeedStep = 500;
-    static constexpr quint16 MaxPoints = 16384;
+    static constexpr quint16 MaxSpeed  = 0xFFFF;
+    static constexpr quint16 MaxPoints = 8190;
 
     struct Point
     {
@@ -41,10 +40,10 @@ public:
 
     // no need to check isReady here
     // Attention:
-    // Bits to Pin assignment is different to the description in the EasyLase USB manual.
-    // bit 7 (MSB) -> Pin 3
-    // ...
+    // Bits to Pin assignment is different than the description in the EasyLase USB manual.
     // bit 0 (LSB) -> Pin 10
+    // ...
+    // bit 7 (MSB) -> Pin 3
     void setTTL(quint8 hiLow);
 
     // For range of pps and points see constants above.
@@ -52,6 +51,12 @@ public:
     // After two frames isRead() will go false until the first frame is completed.
     // idle() can be called at any time and clears both buffers and stops output.
     // If you call show() when isReady() returns false, funny behaviour can be experienced.
+    //
+    // Real pps is a little slowner than the passed value.
+    // So it takes a little longer than expected until all points have been processed.
+    // pps * 0.997 for pps = 16000
+    // pps * 0.912 for pps = 64000
+    // real speed for pps = MaxSpeed is 59.899 PPS => 137ms for 8190 points
     void idle();
     bool isReady();
     void show(quint16 pps, const Points & points);
