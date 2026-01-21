@@ -2,6 +2,7 @@
 
 #include <laser/easylase.h>
 
+#include <cflib/util/evtimer.h>
 #include <cflib/util/threadverify.h>
 
 class Laser : private cflib::util::ThreadVerify
@@ -37,10 +38,13 @@ public:
 
 private:
     void easyLaseError();
+    void checkEasyLaseReady();
 
 private:
     EasyLase easyLase_;
     bool hasError_ = false;
     QString error_;
     VoidFunc errorCallback_;
+    cflib::util::EVTimer readyTimer_;
+    QQueue<EasyLase::Points> pointQueue_;
 };

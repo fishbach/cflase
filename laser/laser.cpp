@@ -8,7 +8,8 @@ USE_LOG(LogCat::Etc)
 
 Laser::Laser()
 :
-    ThreadVerify("Laser", Worker)
+    ThreadVerify("Laser", Worker),
+    readyTimer_(this, &Laser::checkEasyLaseReady)
 {
     setThreadPrio(QThread::TimeCriticalPriority);
     easyLase_.setErrorCallback([this]() { easyLaseError(); });
@@ -24,6 +25,7 @@ Laser::~Laser()
 void Laser::reset()
 {
     if (!verifyThreadCall(&Laser::reset)) return;
+    readyTimer_.stop();
     hasError_ = false;
     error_ = QString();
     easyLase_.connect();
@@ -92,22 +94,30 @@ void Laser::easyLaseError()
     if (errorCallback_) errorCallback_();
 }
 
+void Laser::checkEasyLaseReady()
+{
+    if (!easyLase_.isReady()) {
+        readyTimer_.singleShot(0.002);
+        return;
+    }
+    EasyLase::Points points = pointQueue_.dequeue();
+    easyLase_.show(EasyLase::MaxSpeed, points);
+    if (!pointQueue_.isEmpty()) {
+        readyTimer_.singleShot(0.002);
+    } else {
+        logInfo("out of points");
+    }
+}
+
 void Laser::test()
 {
     if (!verifyThreadCall(&Laser::test)) return;
     logFunctionTrace
 
-    QTextStream out(stdout);
-    quint16 pps = EasyLase::MaxSpeed;
     EasyLase::Points points(EasyLase::MaxPoints, { .g = 35 });
-    easyLase_.show(pps, points);
-    QElapsedTimer et;
-    et.start();
-    int t1 = 0, j = 0;
     for (int i = 0 ; i < 200 ; ++i) {
-        easyLase_.show(pps, points);
-        while (!easyLase_.isReady() && !hasError_);
+        pointQueue_.enqueue(points);
     }
-    auto t = et.elapsed();
-    out << "e: " << t1 << ", " << j << ", " << t << Qt::endl;
+    logInfo("start");
+    checkEasyLaseReady();
 }

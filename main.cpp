@@ -74,8 +74,6 @@ int main(int argc, char *argv[])
     } else if (cmd == "test") {
         out << "showing test ..." << Qt::endl;
         laser.test();
-        laser.waitForFinish();
-        return 0;
     } else if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
 
     int retval = a.exec();
