@@ -100,10 +100,6 @@ bool EasyLase::isReady()
 void EasyLase::show(quint16 pps, const Points & points)
 {
     logFunctionTrace
-    if (points.empty()) {
-        idle();
-        return;
-    }
     if (!check(points.size() <= MaxPoints, QString("too many points: %1").arg(points.size()))) return;
     QByteArray data = LaserData;
     data += toByteArray(pps);

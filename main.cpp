@@ -51,8 +51,11 @@ int main(int argc, char *argv[])
     }
 
     Laser laser;
-    laser.setErrorCallback([&laser]() {
-        err << "error: " << laser.errorString() << Qt::endl;
+    laser.setErrorCallback([](const QString & error) {
+        QTextStream(stderr) << "error: " << error << Qt::endl;
+    });
+    laser.setActiveCallback([](bool active) {
+        QTextStream(stdout) << "laser: " << (active ? "on" : "off") << Qt::endl;
     });
     if (laser.hasError()) return 2;
 
@@ -70,10 +73,11 @@ int main(int argc, char *argv[])
         return 0;
     } else if (cmd == "beam") {
         out << "showing beam ..." << Qt::endl;
-        laser.show(EasyLase::Point{.g = 35});
+        laser.show({.g = 35});
     } else if (cmd == "test") {
         out << "showing test ..." << Qt::endl;
-        laser.test();
+        Laser::Points points(EasyLase::MaxPoints, {.g = 35});
+        laser.show(points);
     } else if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
 
     int retval = a.exec();
