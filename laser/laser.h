@@ -12,8 +12,8 @@ public:
 
     struct Point
     {
-        float  x = 0.0;  // -1.0 ... 1.0
-        float  y = 0.0;  // -1.0 ... 1.0
+        double x = 0.0;  // -1.0 ... 1.0
+        double y = 0.0;  // -1.0 ... 1.0
         quint8 r = 0;
         quint8 g = 0;
         quint8 b = 0;

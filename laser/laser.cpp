@@ -8,7 +8,7 @@ USE_LOG(LogCat::Etc)
 
 namespace {
 
-inline quint16 convertAxis(float v) { return qMax(0, qMin(4095, qRound((v + 1.0) * 2047.5))); }
+inline quint16 convertAxis(double v) { return qMax(0, qMin(4095, qRound((v + 1.0) * 2047.5))); }
 
 inline EasyLase::Point convertPoint(const Laser::Point & p)
 {

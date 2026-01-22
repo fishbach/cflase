@@ -5,6 +5,9 @@
 #include <cflib/util/log.h>
 #include <cflib/util/unixsignal.h>
 
+#include <numbers>
+#include <cmath>
+
 using namespace cflib::dao;
 using namespace cflib::util;
 
@@ -76,8 +79,19 @@ int main(int argc, char *argv[])
         laser.show({.g = 35});
     } else if (cmd == "test") {
         out << "showing test ..." << Qt::endl;
-        Laser::Points points(EasyLase::MaxPoints, {.g = 35});
-        laser.show(points);
+
+        constexpr double Pi = std::numbers::pi_v<double>;
+
+        int pc = 15000;
+        Laser::Points points;
+        for (int i = 0 ; i < pc ; ++i) {
+            points << Laser::Point{
+                .x = std::cos(2 * Pi * i / pc) / 4,
+                .y = std::sin(2 * Pi * i / pc) / 4,
+                .g = 45
+            };
+        }
+        laser.show(points, true);
     } else if (!cmd.isEmpty()) return showUsage(cmdLine.executable());
 
     int retval = a.exec();
