@@ -132,7 +132,9 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
         return;
     }
 
-    logDebug("showing %1 points %2 repeat and %3 pps", points.size(), repeat ? "with" : "without", pps);
+    int replication = qMax(1, qRound((double)MaxSpeed / (double)pps));
+    logDebug("showing %1 points %2 repeat and %3 pps (replication: %4)",
+        points.size(), repeat ? "with" : "without", pps, replication);
 
     if (activeCallback_ && !isActive_) activeCallback_(true);
 
@@ -155,9 +157,6 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     readyTimer_.stop();
     isRepeating_ = repeat;
     repeatPos_ = 0;
-
-    int replication = qMax(1, qRound((double)MaxSpeed / (double)pps));
-    logDebug("replication factor: %1", replication);
 
     pointBlock.reserve(EasyLase::MaxPoints);
     for (const Point & p : points) {

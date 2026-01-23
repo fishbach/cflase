@@ -9,6 +9,7 @@ class Laser : private cflib::util::ThreadVerify
 {
 public:
     static constexpr quint16 MaxSpeed  = 59899;
+    static constexpr quint16 OptimalPointCount  = EasyLase::MaxPoints;
 
     struct Point
     {
