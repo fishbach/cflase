@@ -30,7 +30,6 @@ Laser::Laser()
 {
     setThreadPrio(QThread::TimeCriticalPriority);
     easyLase_.setErrorCallback([this]() { easyLaseError(); });
-    reset();
 }
 
 Laser::~Laser()
@@ -221,7 +220,12 @@ void Laser::checkEasyLaseReady()
         } else {
             easyLase_.show(EasyLase::MaxSpeed, pointQueue_.takeFirst());
             readyTimer_.singleShot(0.002);
-            if (pointQueue_.size() == 1 && finishedCallback_) finishedCallback_();
+            if (finishedCallback_) {
+                if (pointQueue_.isEmpty())
+                    logDebug("too late for finished callback");
+                else if (pointQueue_.first().size() < EasyLase::MaxPoints)
+                    finishedCallback_();
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ cf_app(cflase
     cflib_dao cflib_db cflib_net
     DIRS
         laser
+        services
     OTHER_FILES
         .gitignore
     ENABLE_SER

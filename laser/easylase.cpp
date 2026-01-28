@@ -106,6 +106,6 @@ void EasyLase::show(quint16 pps, const Points & points)
     const quint16 size = points.size() * sizeof(Point);
     data += toByteArray(size);
     data.append(reinterpret_cast<const char *>(points.data()), size);
-    logTrace("sending (hex): %1", data.toHex());
+    logTrace("sending %1 bytes : %2", data.size(), data.toHex());
     check(device_.write(data) == data.size(), "laser data");
 }
