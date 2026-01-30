@@ -1,1 +1,51 @@
-huhu
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Laser</title>
+
+    <link rel='shortcut icon' type='image/svg+xml' href='/favicon.svg?<!etag!>'>
+</head>
+
+<body>
+    <script type="module">
+        const laserURL = 'http://10.24.75.22:8080';
+        const rmi         = (await import(laserURL + '/js/cflib/net/rmi.mjs')).default;
+        window.laser      = (await import(laserURL + '/js/services/laserservice.mjs')).default;
+        window.LaserPoint = (await import(laserURL + '/js/dao/laserpoint.mjs')).default;
+        window.OptimalPointCount = 8190;
+        window.MaxSpeed          = 59899;
+
+        rmi.start(laserURL + '/ws');
+        console.log('start');
+
+        window.lr = (x) => { console.log('reply: ', x); };
+
+        window.calcNext = function()
+        {
+            let Pi = Math.PI;
+            let pc = OptimalPointCount;
+            let points = [];
+            for (let i = 0 ; i < pc ; ++i) {
+                points.push(new LaserPoint({
+                    x: Math.cos(2 * Pi * i / pc) / 4,
+                    y: Math.sin(2 * Pi * i / pc) / 4,
+                    g: 45
+                }));
+            }
+            return points;
+        };
+
+        laser.rsig.finished.bind(() => {
+            laser.show(calcNext(), false, MaxSpeed);
+        }).register();
+        let first = calcNext();
+        first.push(...calcNext());
+        first.push(...calcNext());
+        laser.show(first, false, MaxSpeed);
+    </script>
+</body>
+</html>

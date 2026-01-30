@@ -1,5 +1,6 @@
 #pragma once
 
+#include <dao/laserpoint.h>
 #include <laser/easylase.h>
 
 #include <cflib/util/evtimer.h>
@@ -8,21 +9,13 @@
 class Laser : private cflib::util::ThreadVerify
 {
 public:
-    static constexpr quint16 MaxSpeed  = 59899;
+    static constexpr quint16 MaxSpeed           = 59899;
     static constexpr quint16 OptimalPointCount  = EasyLase::MaxPoints;
 
-    struct Point
-    {
-        double x = 0.0;  // -1.0 ... 1.0
-        double y = 0.0;  // -1.0 ... 1.0
-        quint8 r = 0;
-        quint8 g = 0;
-        quint8 b = 0;
-    };
-
-    using Points = QVector<Point>;
-    using VoidFunc = std::function<void ()>;
-    using BoolFunc = std::function<void (bool)>;
+    using Point      = dao::LaserPoint;
+    using Points     = dao::LaserPoints;
+    using VoidFunc   = std::function<void ()>;
+    using BoolFunc   = std::function<void (bool)>;
     using StringFunc = std::function<void (const QString &)>;
 
 public:

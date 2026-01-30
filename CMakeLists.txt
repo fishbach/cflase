@@ -13,9 +13,14 @@ include(cflib/cmake/ProjectConfig.cmake)
 cf_app(cflase
     cflib_dao cflib_db cflib_net
     DIRS
+        dao
         laser
         services
     OTHER_FILES
         .gitignore
     ENABLE_SER
+)
+
+add_custom_command(TARGET cflase POST_BUILD
+    COMMAND cflase --export "${PROJECT_SOURCE_DIR}/htdocs"
 )

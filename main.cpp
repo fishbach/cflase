@@ -1,11 +1,10 @@
 #include <laser/laser.h>
-#include <services/mainservice.h>
+#include <services/laserservice.h>
 #include <stream.h>
 
 #include <cflib/dao/version.h>
 #include <cflib/net/fileserver.h>
 #include <cflib/net/httpserver.h>
-#include <cflib/net/logservice.h>
 #include <cflib/net/rmiserver.h>
 #include <cflib/net/wscommmanager.h>
 #include <cflib/util/cmdline.h>
@@ -108,13 +107,12 @@ int main(int argc, char *argv[])
         laser->setFinishedCallback([&]() { laser->show(stream.getNext()); });
         laser->show(stream.getFirst());
         return runLoop();
-    } else if (cmd == "web") {
+    } else if (cmd == "web" || exportOpt.isSet()) {
         // RMI server
-        WSCommManager<int> commMgr("/ws", QRegularExpression(), 10, 365 * 24 * 3600);
+        WSCommManager<int> commMgr("/ws");
         RMIServer<int>     rmiServer(commMgr);
 
-        MainService mainService; rmiServer.registerService(mainService);
-        LogService  logService;  rmiServer.registerService(logService);
+        LaserService laserService; rmiServer.registerService(laserService);
 
         if (exportOpt.isSet()) {
             rmiServer.exportTo(exportOpt.value());
@@ -123,6 +121,7 @@ int main(int argc, char *argv[])
         }
 
         FileServer fs("../htdocs", true);
+        fs.setAccessControlAllowOrigin("*");
 
         HttpServer serv(1);
         serv.registerHandler(commMgr);

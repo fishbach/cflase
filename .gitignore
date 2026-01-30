@@ -1,2 +1,4 @@
-/build/
 /bin/
+/build/
+/htdocs/js/dao/
+/htdocs/js/services/

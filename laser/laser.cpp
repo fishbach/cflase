@@ -144,7 +144,7 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
         if (isRepeating_ || repeat) {
             pointQueue_.clear();
             easyLase_.idle();
-        } else {
+        } else if (!pointQueue_.isEmpty()) {
             pointQueue_.removeLast();   // Placeholder
             if (!pointQueue_.isEmpty() && pointQueue_.last().size() < EasyLase::MaxPoints) {
                 pointBlock = pointQueue_.takeLast();
