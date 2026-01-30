@@ -108,9 +108,9 @@ int main(int argc, char *argv[])
         laser->show(stream.getFirst());
         return runLoop();
     } else if (cmd == "web" || exportOpt.isSet()) {
-        // RMI server
-        WSCommManager<int> commMgr("/ws");
-        RMIServer<int>     rmiServer(commMgr);
+        HttpServer serv(1);
+        WSCommManager<int> commMgr("/ws");     serv.registerHandler(commMgr);
+        RMIServer<int>     rmiServer(commMgr); serv.registerHandler(rmiServer);
 
         LaserService laserService; rmiServer.registerService(laserService);
 
@@ -122,14 +122,13 @@ int main(int argc, char *argv[])
 
         FileServer fs("../htdocs", true);
         fs.setAccessControlAllowOrigin("*");
-
-        HttpServer serv(1);
-        serv.registerHandler(commMgr);
-        serv.registerHandler(rmiServer);
         serv.registerHandler(fs);
+
         serv.start("0.0.0.0", 8080);
 
-        return runLoop();
+        int rv = runLoop();
+        serv.stop();
+        return rv;
     }
 
     return showUsage(cmdLine.executable());
