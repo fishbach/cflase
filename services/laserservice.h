@@ -21,6 +21,8 @@ rmi:
     bool show(const dao::LaserPoints & points, bool repeat, quint16 pps);
 
 cfsignals:
+    rsig<void (const QString & error), void ()> error;
+    rsig<void (bool active), void ()> active;
     rsig<void (), void ()> finished;
 
 private:

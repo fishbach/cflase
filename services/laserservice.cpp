@@ -9,14 +9,16 @@ namespace services {
 LaserService::LaserService() :
     RMIService(serializeTypeInfo().typeName)
 {
-    laser_.setErrorCallback([](const QString & error) {
-        QTextStream(stderr) << "error: " << error << Qt::endl;
+    laser_.setErrorCallback([this](const QString & msg) {
+        logDebug("signaling error: %1", msg);
+        error(msg);
     });
-    laser_.setActiveCallback([](bool active) {
-        QTextStream(stdout) << "laser: " << (active ? "on" : "off") << Qt::endl;
+    laser_.setActiveCallback([this](bool onOff) {
+        logDebug("signaling active: %1", onOff);
+        active(onOff);
     });
     laser_.setFinishedCallback([this]() {
-        logTrace("signaling finished");
+        logDebug("signaling finished");
         finished();
     });
     laser_.reset();
@@ -30,18 +32,21 @@ LaserService::~LaserService()
 bool LaserService::on()
 {
     laser_.on();
+    laser_.waitForFinish();
     return !laser_.hasError();
 }
 
 bool LaserService::off()
 {
     laser_.off();
+    laser_.waitForFinish();
     return !laser_.hasError();
 }
 
 bool LaserService::idle()
 {
     laser_.idle();
+    laser_.waitForFinish();
     return !laser_.hasError();
 }
 

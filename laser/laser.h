@@ -67,4 +67,5 @@ private:
     bool                    isRepeating_ = false;
     int                     repeatPos_ = 0;
     VoidFunc                finishedCallback_;
+    int                     finishedCallQueueSize_ = -1;
 };

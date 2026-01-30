@@ -7,45 +7,107 @@
 
     <title>Laser</title>
 
-    <link rel='shortcut icon' type='image/svg+xml' href='/favicon.svg?<!etag!>'>
+    <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg?<!etag!>">
+    <script src="http://10.24.75.22:8080/js/laser.js" defer></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+        }
+
+        canvas {
+            background-color: #a0a0a0;
+            width: 95vmin;
+            height: 95vmin;
+        }
+    </style>
 </head>
 
 <body>
-    <script type="module">
-        const laserURL = 'http://10.24.75.22:8080';
-        const rmi         = (await import(laserURL + '/js/cflib/net/rmi.mjs')).default;
-        window.laser      = (await import(laserURL + '/js/services/laserservice.mjs')).default;
-        window.LaserPoint = (await import(laserURL + '/js/dao/laserpoint.mjs')).default;
-        window.OptimalPointCount = 8190;
-        window.MaxSpeed          = 59899;
+    <canvas id="screen"></canvas>
+    <script>
+        const canvas = document.getElementById('screen');
+        const ctx    = canvas.getContext('2d');
 
-        rmi.start(laserURL + '/ws');
-        console.log('start');
+        function windowResized()
+        {
+            const size = canvas.clientWidth;
+            canvas.width  = size;
+            canvas.height = size;
 
-        window.lr = (x) => { console.log('reply: ', x); };
+            ctx.strokeStyle = '#0000ff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            const center = size / 2;
+            ctx.moveTo(0,    center);
+            ctx.lineTo(size, center);
+            ctx.moveTo(center, 0);
+            ctx.lineTo(center, size);
+            ctx.stroke();
+        }
+        addEventListener('load',   windowResized);
+        addEventListener('resize', windowResized);
 
-        window.calcNext = function()
+        canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = -1 + (event.clientX - rect.left) / rect.width  * 2;
+            const y =  1 - (event.clientY - rect.top ) / rect.height * 2;
+
+            let points = [];
+            points.push(new laser.Point({
+                x: -x,
+                y: y,
+                g: 45
+            }));
+            laser.show(points, true, Speed);
+        });
+
+        let Speed      = null;
+        let PointCount = null;
+
+        function initLaser()
+        {
+            Speed      = laser.MaxSpeed;
+            PointCount = laser.OptimalPointCount * 2;
+
+            laser.errorCallback = (error) => {
+                console.log('error:', error);
+            };
+            laser.activeCallback = (active) => {
+                console.log('active:', active);
+            };
+            laser.finishedCallback = () => {
+                laser.show(calcNext(), false, Speed);
+            };
+            let first = calcNext();
+            first = first.concat(calcNext());
+            // laser.show(first, false, Speed);
+            console.log("started ...");
+        }
+
+        let shift = 0;
+        function calcNext()
         {
             let Pi = Math.PI;
-            let pc = OptimalPointCount;
+            let pc = PointCount;
             let points = [];
             for (let i = 0 ; i < pc ; ++i) {
-                points.push(new LaserPoint({
-                    x: Math.cos(2 * Pi * i / pc) / 4,
-                    y: Math.sin(2 * Pi * i / pc) / 4,
+                points.push(new laser.Point({
+                    x: Math.cos(10 * 2 * Pi * i / pc) / 4,
+                    y: Math.sin(10 * 2 * Pi * (i + shift) / pc) / 4,
                     g: 45
                 }));
+                shift = shift + 0.005;
             }
             return points;
         };
 
-        laser.rsig.finished.bind(() => {
-            laser.show(calcNext(), false, MaxSpeed);
-        }).register();
-        let first = calcNext();
-        first.push(...calcNext());
-        first.push(...calcNext());
-        laser.show(first, false, MaxSpeed);
     </script>
 </body>
 </html>

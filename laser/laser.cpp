@@ -152,11 +152,6 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
         }
     }
 
-    isActive_ = true;
-    readyTimer_.stop();
-    isRepeating_ = repeat;
-    repeatPos_ = 0;
-
     pointBlock.reserve(EasyLase::MaxPoints);
     for (const Point & p : points) {
         EasyLase::Point ep = convertPoint(p);
@@ -170,6 +165,12 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     }
     if (!pointBlock.isEmpty()) pointQueue_ << pointBlock;
 
+    isActive_ = true;
+    readyTimer_.stop();
+    isRepeating_ = repeat;
+    repeatPos_ = 0;
+    finishedCallQueueSize_ = -1;
+
     if (repeat) {
         if (pointQueue_.size() == 1) {
             // EasyLase does the repetition.
@@ -179,6 +180,7 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     } else {
         // Placeholder to finish last block before going idle.
         pointQueue_ << EasyLase::Points(1, {});
+        if (finishedCallback_) finishedCallQueueSize_ = points.size() / EasyLase::MaxPoints / 2 + 1;
     }
     checkEasyLaseReady();
 }
@@ -220,12 +222,7 @@ void Laser::checkEasyLaseReady()
         } else {
             easyLase_.show(EasyLase::MaxSpeed, pointQueue_.takeFirst());
             readyTimer_.singleShot(0.002);
-            if (finishedCallback_) {
-                if (pointQueue_.isEmpty())
-                    logDebug("too late for finished callback");
-                else if (pointQueue_.first().size() < EasyLase::MaxPoints)
-                    finishedCallback_();
-            }
+            if (pointQueue_.size() == finishedCallQueueSize_) finishedCallback_();
         }
     }
 }
