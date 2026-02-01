@@ -17,17 +17,12 @@ Promise.all([
     laser.OptimalPointCount = 8190;
 
     rmi.start(laserURL + '/ws');
-    laser.idle();
-    laser.rsig.error.bind((error) => {
-        laser.errorCallback && laser.errorCallback(error);
-    }).register();
-    laser.rsig.active.bind((active) => {
-        laser.activeCallback && laser.activeCallback(active);
-    }).register();
-    laser.rsig.finished.bind(() => {
-        laser.finishedCallback && laser.finishedCallback();
-    }).register();
-    initLaser();
+    laser.idle(() => {
+        laser.rsig.error   .bind((error ) => { laser.errorCallback    && laser.errorCallback   (error ); }).register();
+        laser.rsig.active  .bind((active) => { laser.activeCallback   && laser.activeCallback  (active); }).register();
+        laser.rsig.finished.bind((      ) => { laser.finishedCallback && laser.finishedCallback(      ); }).register();
+        initLaser();
+    });
 });
 
 })();

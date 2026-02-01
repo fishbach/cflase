@@ -18,7 +18,7 @@ rmi:
     bool off();
 
     bool idle();
-    bool show(const dao::LaserPoints & points, bool repeat, quint16 pps);
+    void show(const dao::LaserPoints & points, bool repeat, quint16 pps);
 
 cfsignals:
     rsig<void (const QString & error), void ()> error;

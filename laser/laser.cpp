@@ -13,7 +13,7 @@ inline quint16 convertAxis(double v) { return qMax(0, qMin(4095, qRound((v + 1.0
 inline EasyLase::Point convertPoint(const Laser::Point & p)
 {
     return EasyLase::Point{
-        .x = convertAxis(p.x),
+        .x = convertAxis(-p.x),
         .y = convertAxis(p.y),
         .r = p.r,
         .g = p.g,
@@ -143,7 +143,6 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     if (isActive_) {
         if (isRepeating_ || repeat) {
             pointQueue_.clear();
-            easyLase_.idle();
         } else if (!pointQueue_.isEmpty()) {
             pointQueue_.removeLast();   // Placeholder
             if (!pointQueue_.isEmpty() && pointQueue_.last().size() < EasyLase::MaxPoints) {

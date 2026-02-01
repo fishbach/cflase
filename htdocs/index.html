@@ -61,11 +61,11 @@
 
             let points = [];
             points.push(new laser.Point({
-                x: -x,
+                x: x,
                 y: y,
                 g: 45
             }));
-            laser.show(points, true, Speed);
+            // laser.show(points, true, Speed);
         });
 
         let Speed      = null;
@@ -87,7 +87,7 @@
             };
             let first = calcNext();
             first = first.concat(calcNext());
-            // laser.show(first, false, Speed);
+            laser.show(first, false, Speed);
             console.log("started ...");
         }
 
