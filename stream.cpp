@@ -2,6 +2,8 @@
 
 #include <cflib/util/log.h>
 
+#include <numbers>
+
 USE_LOG(LogCat::Compute)
 
 Stream::Stream()
