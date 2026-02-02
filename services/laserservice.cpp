@@ -55,4 +55,24 @@ void LaserService::show(const dao::LaserPoints & points, bool repeat, quint16 pp
     laser_.show(points, repeat, pps);
 }
 
+void LaserService::identity()
+{
+    laser_.identity();
+}
+
+void LaserService::move(double dx, double dy)
+{
+    laser_.move(dx, dy);
+}
+
+void LaserService::scale(double sx, double sy)
+{
+    laser_.scale(sx, sy);
+}
+
+void LaserService::rotate(double radiant)
+{
+    laser_.rotate(radiant);
+}
+
 }

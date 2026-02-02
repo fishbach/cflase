@@ -21,6 +21,7 @@ Promise.all([
         laser.rsig.error   .bind((error ) => { laser.errorCallback    && laser.errorCallback   (error ); }).register();
         laser.rsig.active  .bind((active) => { laser.activeCallback   && laser.activeCallback  (active); }).register();
         laser.rsig.finished.bind((      ) => { laser.finishedCallback && laser.finishedCallback(      ); }).register();
+        laser.identity();
         initLaser();
     });
 });

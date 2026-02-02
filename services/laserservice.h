@@ -20,6 +20,11 @@ rmi:
     bool idle();
     void show(const dao::LaserPoints & points, bool repeat, quint16 pps);
 
+    void identity();
+    void move(double dx, double dy);
+    void scale(double sx, double sy);
+    void rotate(double radiant);
+
 cfsignals:
     rsig<void (const QString & error), void ()> error;
     rsig<void (bool active), void ()> active;

@@ -3,25 +3,9 @@
 #include <cflib/util/log.h>
 
 using namespace cflib::util;
+using namespace math;
 
 USE_LOG(LogCat::Etc)
-
-namespace {
-
-inline quint16 convertAxis(double v) { return qMax(0, qMin(4095, qRound((v + 1.0) * 2047.5))); }
-
-inline EasyLase::Point convertPoint(const Laser::Point & p)
-{
-    return EasyLase::Point{
-        .x = convertAxis(-p.x),
-        .y = convertAxis(p.y),
-        .r = p.r,
-        .g = p.g,
-        .b = p.b
-    };
-}
-
-}
 
 Laser::Laser()
 :
@@ -41,8 +25,9 @@ Laser::~Laser()
 void Laser::reset()
 {
     if (!verifyThreadCall(&Laser::reset)) return;
-    hasError_ = false;
-    error_    = QString();
+    hasError_  = false;
+    error_     = QString();
+    transform_ = math::Matrix3x3::identity();
     easyLase_.connect();
     idle();
 }
@@ -184,8 +169,37 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     checkEasyLaseReady();
 }
 
+void Laser::identity()
+{
+    if (!verifyThreadCall(&Laser::identity)) return;
+    logFunctionTrace
+    transform_ = Matrix3x3::identity();
+}
+
+void Laser::move(double dx, double dy)
+{
+    if (!verifyThreadCall(&Laser::move, dx, dy)) return;
+    logFunctionTrace
+    transform_ = Matrix3x3::makeTranslation(dx, dy) * transform_;
+}
+
+void Laser::scale(double sx, double sy)
+{
+    if (!verifyThreadCall(&Laser::scale, sx, sy)) return;
+    logFunctionTrace
+    transform_ = Matrix3x3::makeScale(sx, sy) * transform_;
+}
+
+void Laser::rotate(double radiant)
+{
+    if (!verifyThreadCall(&Laser::rotate, radiant)) return;
+    logFunctionTrace
+    transform_ = Matrix3x3::makeRotation(radiant) * transform_;
+}
+
 void Laser::easyLaseError()
 {
+    logFunctionTrace
     readyTimer_.stop();
     pointQueue_.clear();
     hasError_ = true;
@@ -224,4 +238,22 @@ void Laser::checkEasyLaseReady()
             if (pointQueue_.size() == finishedCallQueueSize_) finishedCallback_();
         }
     }
+}
+
+namespace {
+
+inline quint16 convertAxis(double v) { return qMax(0, qMin(4095, qRound((v + 1.0) * 2047.5))); }
+
+}
+
+inline EasyLase::Point Laser::convertPoint(const Point & p)
+{
+    const Vec2 v = transform_ * Vec2{ p.x, p.y };
+    return EasyLase::Point{
+        .x = convertAxis(-v.x),
+        .y = convertAxis(v.y),
+        .r = p.r,
+        .g = p.g,
+        .b = p.b
+    };
 }

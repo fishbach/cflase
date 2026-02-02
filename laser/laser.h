@@ -2,6 +2,7 @@
 
 #include <dao/laserpoint.h>
 #include <laser/easylase.h>
+#include <laser/math.h>
 
 #include <cflib/util/evtimer.h>
 #include <cflib/util/threadverify.h>
@@ -49,9 +50,15 @@ public:
     void show(const Points & points, bool repeat = false, quint16 pps = MaxSpeed);
     void show(const Point & point) { return show(Points(1, point), true); }
 
+    void identity();
+    void move(double dx, double dy);
+    void scale(double sx, double sy);
+    void rotate(double radiant);
+
 private:
     void easyLaseError();
     void checkEasyLaseReady();
+    EasyLase::Point convertPoint(const Point & p);
 
 private:
     EasyLase                easyLase_;
@@ -68,4 +75,6 @@ private:
     int                     repeatPos_ = 0;
     VoidFunc                finishedCallback_;
     int                     finishedCallQueueSize_ = -1;
+
+    math::Matrix3x3         transform_ = math::Matrix3x3::identity();
 };
