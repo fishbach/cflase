@@ -27,7 +27,7 @@ void Laser::reset()
     if (!verifyThreadCall(&Laser::reset)) return;
     hasError_  = false;
     error_     = QString();
-    transform_ = math::Matrix3x3::identity();
+    identity();
     easyLase_.connect();
     idle();
 }
@@ -77,6 +77,8 @@ void Laser::on()
 {
     if (!verifyThreadCall(&Laser::on)) return;
     logFunctionTrace
+    easyLase_.idle();
+    QThread::msleep(100);
     easyLase_.setTTL(0x03);
 }
 
@@ -84,6 +86,8 @@ void Laser::off()
 {
     if (!verifyThreadCall(&Laser::off)) return;
     logFunctionTrace
+    easyLase_.idle();
+    QThread::msleep(100);
     easyLase_.setTTL(0x00);
 }
 
@@ -173,7 +177,7 @@ void Laser::identity()
 {
     if (!verifyThreadCall(&Laser::identity)) return;
     logFunctionTrace
-    transform_ = Matrix3x3::identity();
+    transform_ = Matrix3x3::makeScale(0.95, 0.95);
 }
 
 void Laser::move(double dx, double dy)

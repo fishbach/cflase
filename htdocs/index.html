@@ -8,7 +8,7 @@
     <title>Laser</title>
 
     <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg?<!etag!>">
-    <script src="http://10.24.75.22:8080/js/laser.js" defer></script>
+    <script src="/js/laser.js" defer></script>
     <style>
         body, html {
             margin: 0;
@@ -85,6 +85,8 @@
             laser.finishedCallback = () => {
                 laser.show(calcNext(), false, Speed);
             };
+            laser.scale(0.3, 0.3);
+            laser.move(0.08, 0.2);
             let first = calcNext();
             first = first.concat(calcNext());
             laser.show(first, false, Speed);
@@ -99,11 +101,11 @@
             let points = [];
             for (let i = 0 ; i < pc ; ++i) {
                 points.push(new laser.Point({
-                    x: Math.cos(10 * 2 * Pi * i / pc) / 4,
-                    y: Math.sin(10 * 2 * Pi * (i + shift) / pc) / 4,
+                    x: Math.cos(25 * 2 * Pi * i / pc),
+                    y: Math.sin(25 * 2 * Pi * (i + shift) / pc),
                     g: 45
                 }));
-                shift = shift + 0.005;
+                shift += 0.005;
             }
             return points;
         };
