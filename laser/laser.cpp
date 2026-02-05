@@ -132,6 +132,7 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     if (isActive_) {
         if (isRepeating_ || repeat) {
             pointQueue_.clear();
+            easyLase_.idle();
         } else if (!pointQueue_.isEmpty()) {
             pointQueue_.removeLast();   // Placeholder
             if (!pointQueue_.isEmpty() && pointQueue_.last().size() < EasyLase::MaxPoints) {
@@ -168,7 +169,8 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     } else {
         // Placeholder to finish last block before going idle.
         pointQueue_ << EasyLase::Points(1, {});
-        if (finishedCallback_) finishedCallQueueSize_ = points.size() / EasyLase::MaxPoints / 2 + 1;
+        if (finishedCallback_) finishedCallQueueSize_ = (points.size() + EasyLase::MaxPoints - 1) / EasyLase::MaxPoints / 2 + 1;
+        logTrace("finished call queue size : %1 / %2", finishedCallQueueSize_, pointQueue_.size());
     }
     checkEasyLaseReady();
 }

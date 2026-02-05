@@ -15,6 +15,18 @@ Promise.all([
     laser.finishedCallback  = null;
     laser.MaxSpeed          = 59899;
     laser.OptimalPointCount = 8190;
+    laser.PPS               = laser.MaxSpeed;
+
+    laser.showFunc = (gen) => {
+        const it = gen();
+        const points = () => {
+            let p = [];
+            while (p.length < laser.OptimalPointCount) p.push(it.next().value);
+            return p;
+        };
+        laser.finishedCallback = () => { laser.show(points(), false, laser.MaxSpeed); };
+        laser.show(points().concat(points()), false, laser.MaxSpeed);
+    };
 
     rmi.start(laserURL + '/ws');
     laser.idle(() => {
