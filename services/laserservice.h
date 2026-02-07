@@ -18,7 +18,7 @@ rmi:
     bool off();
 
     bool idle();
-    void show(const dao::LaserPoints & points, bool repeat, quint16 pps);
+    void show(const dao::LaserPoints & points, bool repeat);
 
     void identity();
     void move(double dx, double dy);

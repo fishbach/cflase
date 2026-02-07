@@ -50,9 +50,9 @@ bool LaserService::idle()
     return !laser_.hasError();
 }
 
-void LaserService::show(const dao::LaserPoints & points, bool repeat, quint16 pps)
+void LaserService::show(const dao::LaserPoints & points, bool repeat)
 {
-    laser_.show(points, repeat, pps);
+    laser_.show(points, repeat);
 }
 
 void LaserService::identity()

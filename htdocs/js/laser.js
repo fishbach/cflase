@@ -10,12 +10,11 @@ Promise.all([
     window.laser = mods[1].default;
     laser.Point  = mods[2].default;
 
-    laser.errorCallback     = null;
-    laser.activeCallback    = null;
-    laser.finishedCallback  = null;
-    laser.MaxSpeed          = 59899;
-    laser.OptimalPointCount = 8190 * 2;
-    laser.PPS               = laser.MaxSpeed;
+    laser.errorCallback         = null;
+    laser.activeCallback        = null;
+    laser.finishedCallback      = null;
+    laser.PointsPerSecond       = 48000;
+    laser.OptimalPointsPerBlock = 16000;
 
     const idleOrig = laser.idle;
     laser.idle = (retFunc) => {
@@ -27,11 +26,11 @@ Promise.all([
         const it = gen();
         const points = () => {
             let p = [];
-            while (p.length < laser.OptimalPointCount) p.push(it.next().value);
+            while (p.length < laser.OptimalPointsPerBlock) p.push(it.next().value);
             return p;
         };
-        laser.finishedCallback = () => { laser.show(points(), false, laser.MaxSpeed); };
-        laser.show(points(), false, laser.MaxSpeed);
+        laser.finishedCallback = () => { laser.show(points(), false); };
+        laser.show(points(), false);
     };
 
     rmi.start(laserURL + '/ws');

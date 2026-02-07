@@ -7,6 +7,12 @@ using namespace math;
 
 USE_LOG(LogCat::Etc)
 
+namespace {
+
+constexpr quint16 BlockSize = Laser::OptimalPointsPerBlock / 2;
+
+}
+
 Laser::Laser()
 :
     ThreadVerify("Laser", Worker),
@@ -109,20 +115,18 @@ void Laser::idle()
     if (doCallActiveCallback) activeCallback_(false);
 }
 
-void Laser::show(const Points & points, bool repeat, quint16 pps)
+void Laser::show(const Points & points, bool repeat)
 {
-    if (!verifyThreadCall(&Laser::show, points, repeat, pps)) return;
+    if (!verifyThreadCall(&Laser::show, points, repeat)) return;
     logFunctionTrace
 
     // empty input
-    if (points.isEmpty() || pps == 0) {
+    if (points.isEmpty()) {
         idle();
         return;
     }
 
-    int replication = qMax(1, qRound((double)MaxSpeed / (double)pps));
-    logDebug("showing %1 points %2 repeat and %3 pps (replication: %4)",
-        points.size(), repeat ? "with" : "without", pps, replication);
+    logDebug("showing %1 points %2 repeat", points.size(), repeat ? "with" : "without");
 
     if (activeCallback_ && !isActive_) activeCallback_(true);
 
@@ -134,21 +138,18 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
             pointQueue_.clear();
         } else if (!pointQueue_.isEmpty()) {
             pointQueue_.removeLast();   // Placeholder
-            if (!pointQueue_.isEmpty() && pointQueue_.last().size() < EasyLase::MaxPoints) {
+            if (!pointQueue_.isEmpty() && pointQueue_.last().size() < BlockSize) {
                 pointBlock = pointQueue_.takeLast();
             }
         }
     }
 
-    pointBlock.reserve(EasyLase::MaxPoints);
+    pointBlock.reserve(BlockSize);
     for (const Point & p : points) {
-        EasyLase::Point ep = convertPoint(p);
-        for (int i = 0 ; i < replication ; ++i) {
-            pointBlock << ep;
-            if (pointBlock.size() == EasyLase::MaxPoints) {
-                pointQueue_ << pointBlock;
-                pointBlock.resize(0);
-            }
+        pointBlock << convertPoint(p);
+        if (pointBlock.size() == BlockSize) {
+            pointQueue_ << pointBlock;
+            pointBlock.resize(0);
         }
     }
     if (!pointBlock.isEmpty()) pointQueue_ << pointBlock;
@@ -162,13 +163,13 @@ void Laser::show(const Points & points, bool repeat, quint16 pps)
     if (repeat) {
         if (pointQueue_.size() == 1) {
             // EasyLase does the repetition.
-            easyLase_.show(EasyLase::MaxSpeed, pointQueue_.takeFirst());
+            easyLase_.show(PointsPerSecond, pointQueue_.takeFirst());
             return;
         }
     } else {
         // Placeholder to finish last block before going idle.
         pointQueue_ << EasyLase::Points(1, {});
-        if (finishedCallback_) finishedCallQueueSize_ = (points.size() + EasyLase::MaxPoints - 1) / EasyLase::MaxPoints / 2 + 1;
+        if (finishedCallback_) finishedCallQueueSize_ = (points.size() + BlockSize - 1) / BlockSize / 2 + 1;
         logTrace("finished call queue size : %1 / %2", finishedCallQueueSize_, pointQueue_.size());
     }
     checkEasyLaseReady();
@@ -219,17 +220,17 @@ void Laser::checkEasyLaseReady()
         return;
     }
     if (isRepeating_) {
-        easyLase_.show(EasyLase::MaxSpeed, pointQueue_[repeatPos_++]);
+        easyLase_.show(PointsPerSecond, pointQueue_[repeatPos_++]);
         if (repeatPos_ == pointQueue_.size()) repeatPos_ = 0;
         readyTimer_.singleShot(0.002);
 
         // check that next show has enough points
         EasyLase::Points & current = pointQueue_[repeatPos_];
-        if (current.size() < EasyLase::MaxPoints) {
+        if (current.size() < BlockSize) {
             int nextId = repeatPos_ + 1;
             if (nextId == pointQueue_.size()) nextId = 0;
             EasyLase::Points & next = pointQueue_[nextId];
-            int missing = EasyLase::MaxPoints - current.size();
+            int missing = BlockSize - current.size();
             current.append(next.mid(0, missing));
             next.remove(0, missing);
         }
@@ -238,7 +239,7 @@ void Laser::checkEasyLaseReady()
             logDebug("out of points");
             idle();
         } else {
-            easyLase_.show(25000, pointQueue_.takeFirst());
+            easyLase_.show(PointsPerSecond, pointQueue_.takeFirst());
             readyTimer_.singleShot(0.002);
             if (pointQueue_.size() == finishedCallQueueSize_) finishedCallback_();
         }

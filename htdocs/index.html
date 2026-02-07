@@ -64,7 +64,7 @@
             //     x: mouseX,
             //     y: mouseY,
             //     g: 35
-            // })], true, laser.MaxSpeed);
+            // })], true);
         });
 
         function initLaser()
@@ -88,8 +88,8 @@
         {
             const Pi = Math.PI;
             const fps = 80;
-            const pc = laser.PPS / fps;
-            const shiftPP = 2 * Pi / 4 / laser.PPS;
+            const pc = laser.PointsPerSecond / fps;
+            const shiftPP = 2 * Pi / 4 / laser.PointsPerSecond;
 
             let shift = 0;
             while (true) {
@@ -107,22 +107,25 @@
 
         function* beams()
         {
-            const fps = 50;
-            const pc = 2;
-            const pDup = 25000 / pc / fps;
-            console.log("dup", pDup);
-            const g = 45;
+            const fps = 80;
+            const pc = 5;
+            const pDup = laser.PointsPerSecond / pc / fps;
+
+            function* point(x, y, g)
+            {
+                for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
+                    x: x,
+                    y: y,
+                    g: g
+                });
+            }
+
             while (true) {
-                for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: 0.5,
-                    y: 0,
-                    g: g
-                });
-                for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: -0.5,
-                    y: 0,
-                    g: g
-                });
+                yield* point( 1,  1, 45);
+                yield* point(-1,  1, 0);
+                yield* point(-1, -1, 45);
+                yield* point( 0,  0, 45);
+                yield* point( 1, -1, 45);
             }
         }
 

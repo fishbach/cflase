@@ -10,8 +10,8 @@
 class Laser : private cflib::util::ThreadVerify
 {
 public:
-    static constexpr quint16 MaxSpeed           = 59899;
-    static constexpr quint16 OptimalPointCount  = EasyLase::MaxPoints;
+    static constexpr quint16 PointsPerSecond       = 48000;
+    static constexpr quint16 OptimalPointsPerBlock = 16000;
 
     using Point      = dao::LaserPoint;
     using Points     = dao::LaserPoints;
@@ -47,7 +47,7 @@ public:
     // If there was something active with repeat, it is replaced by new points,
     // otherwise new points will be appended.
     void idle();
-    void show(const Points & points, bool repeat = false, quint16 pps = MaxSpeed);
+    void show(const Points & points, bool repeat = false);
     void show(const Point & point) { return show(Points(1, point), true); }
 
     void identity();

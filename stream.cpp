@@ -25,7 +25,6 @@ Laser::Points Stream::getFirst()
     logFunctionTrace
 
     Laser::Points rv = calcNext();
-    rv.append(calcNext());
     fifo_.put(calcNext());
     return rv;
 }
@@ -50,7 +49,7 @@ Laser::Points Stream::calcNext()
 {
     constexpr double Pi = std::numbers::pi_v<double>;
 
-    int pc = Laser::OptimalPointCount;
+    int pc = Laser::OptimalPointsPerBlock;
     Laser::Points points;
     for (int i = 0 ; i < pc ; ++i) {
         points << Laser::Point{
