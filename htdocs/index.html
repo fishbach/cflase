@@ -60,6 +60,11 @@
             const rect = canvas.getBoundingClientRect();
             mouseX = -1 + (event.clientX - rect.left) / rect.width  * 2;
             mouseY =  1 - (event.clientY - rect.top ) / rect.height * 2;
+            // laser.show([new laser.Point({
+            //     x: mouseX,
+            //     y: mouseY,
+            //     g: 35
+            // })], true, laser.MaxSpeed);
         });
 
         function initLaser()
@@ -72,9 +77,9 @@
             };
 
             laser.scale(0.3, 0.3);
-            laser.move(0.1, 0.2);
+            laser.move(0.125, 0.2);
 
-            laser.showFunc(mousePos);
+            laser.showFunc(beams);
 
             console.log("started ...");
         }
@@ -82,7 +87,7 @@
         function* lissajous()
         {
             const Pi = Math.PI;
-            const fps = 50;
+            const fps = 80;
             const pc = laser.PPS / fps;
             const shiftPP = 2 * Pi / 4 / laser.PPS;
 
@@ -100,31 +105,23 @@
             }
         };
 
-        function* mousePos()
+        function* beams()
         {
-            const fps = 25;
-            const pc = 4;
-            const pDup = laser.PPS / pc / fps;
+            const fps = 50;
+            const pc = 2;
+            const pDup = 25000 / pc / fps;
+            console.log("dup", pDup);
+            const g = 45;
             while (true) {
                 for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: mouseX,
-                    y: mouseY,
-                    g: 45
+                    x: 0.5,
+                    y: 0,
+                    g: g
                 });
                 for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: mouseX + 0.25,
-                    y: mouseY,
-                    g: 45
-                });
-                for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: mouseX,
-                    y: mouseY,
-                    g: 45
-                });
-                for (let i = 0 ; i < pDup ; ++i) yield new laser.Point({
-                    x: mouseX - 0.25,
-                    y: mouseY,
-                    g: 45
+                    x: -0.5,
+                    y: 0,
+                    g: g
                 });
             }
         }

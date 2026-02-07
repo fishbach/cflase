@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
         if (!laser) return 2;
         out << "showing beam ..." << Qt::endl;
         laser->show({.g = 35});
+        return runLoop();
     } else if (cmd == "test") {
         Stream stream;
         auto laser = initLaser();
