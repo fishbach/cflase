@@ -79,7 +79,7 @@
             laser.scale(0.3, 0.3);
             laser.move(0.125, 0.2);
 
-            laser.showFunc(beams);
+            laser.showFunc(fig);
 
             console.log("started ...");
         }
@@ -126,6 +126,52 @@
                 yield* point(-1, -1, 45);
                 yield* point( 0,  0, 45);
                 yield* point( 1, -1, 45);
+            }
+        }
+
+        function* fig()
+        {
+            const fps = 80;
+            const pc  = laser.PointsPerSecond / fps;
+            const g   = 45;
+            console.log('pc:', pc);
+
+            function* line(x1, y1, x2, y2, pc)
+            {
+                for (let i = 0 ; i < pc ; ++i) yield new laser.Point({
+                    x: x1 + (x2 - x1) * i / pc,
+                    y: y1 + (y2 - y1) * i / pc
+                });
+            }
+
+            function* lines()
+            {
+                while (true) {
+                    yield* line( 1  ,  1  ,  0  ,  0.2, pc / 8);
+                    yield* line( 0  ,  0.2, -1  ,  1  , pc / 8);
+                    yield* line(-1  ,  1  , -0.2,  0  , pc / 8);
+                    yield* line(-0.2,  0  , -1  , -1  , pc / 8);
+                    yield* line(-1  , -1  ,  0  , -0.2, pc / 8);
+                    yield* line( 0  , -0.2,  1  , -1  , pc / 8);
+                    yield* line( 1  , -1  ,  0.2,  0  , pc / 8);
+                    yield* line( 0.2,  0  ,    1,  1  , pc / 8);
+                }
+            }
+
+            let sq = lines();
+            let c = 0;
+            let i = 0;
+            while (true)
+            {
+                let p = sq.next().value;
+                ++i;
+                if      (i <  pc / 100) p.g = 45;
+                else if (i >= pc /  40) i = 0;
+                if (++c > 600) {
+                    c = 0;
+                    ++i;
+                }
+                yield p;
             }
         }
 
